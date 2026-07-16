@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediatric Growth Estimator - OPD Takhli</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0fdf4; color: #1e293b; display: flex; justify-content: center; padding: 15px; min-height: 100vh; }
+        
+        .container { background: white; max-width: 450px; width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.12); border: 1px solid #bbf7d0; display: flex; flex-direction: column; }
+        
+        .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 22px 15px; text-align: center; position: relative; }
+        .header h1 { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+        .header p { opacity: 0.95; font-size: 12px; color: #d1fae5; }
+        
+        .hub-btn { position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; font-size: 11px; padding: 5px 10px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(255, 255, 255, 0.3); transition: 0.2s; }
+        .hub-btn:hover { background: rgba(255, 255, 255, 0.35); }
+
+        .content { padding: 20px; flex-grow: 1; }
+        .section-title { font-size: 16px; font-weight: bold; color: #047857; margin-bottom: 18px; text-align: center; line-height: 1.4; }
+        
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 12px; border: 2px solid #bbf7d0; border-radius: 8px; font-size: 15px; font-weight: bold; outline: none; background: #fbfdfb; }
+        .form-control:focus { border-color: #10b981; background: #f0fdf4; }
+        
+        .submit-btn { width: 100%; padding: 14px; background: #10b981; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
+        .submit-btn:hover { background: #059669; }
+
+        .result-card { background: #f0fdf4; border: 2px solid #6ee7b7; border-radius: 14px; padding: 20px; margin-top: 20px; display: none; }
+        .result-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #a7f3d0; }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { font-size: 13px; font-weight: bold; color: #065f46; }
+        .result-value { font-size: 15px; font-weight: 800; color: #047857; }
+
+        .advise-box { background: #ffffff; border: 1.5px solid #6ee7b7; border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; line-height: 1.5; color: #1e293b; }
+
+        .btn-reset { width: 100%; padding: 12px; background: #64748b; color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        
+        .qr-section { text-align: center; padding: 15px 10px 5px 10px; border-top: 1px dashed #6ee7b7; margin-top: 20px; display: none; }
+        .btn-qr { background: #e6fcf5; color: #047857; padding: 10px 18px; border-radius: 20px; font-size: 14px; border: 1px solid #6ee7b7; cursor: pointer; font-weight: bold; width: 100%; }
+        #qrcode { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: #ffffff; border-radius: 10px; }
+        
+        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 12px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <a href="https://khemika-opd.github.io/OPD-Takhli-Digital-Toolkit/" class="hub-btn">⬅️ ถอยกลับ</a>
+        <h1>Child Growth Estimator</h1>
+        <p>ระบบประเมินการเจริญเติบโตเพื่อการสื่อสารผู้ปกครอง</p>
+    </div>
+
+    <div class="content">
+        <div class="section-title">ข้อมูลอายุและสัดส่วนที่วัดได้จริง</div>
+        
+        <div class="form-group">
+            <label>📌 รูปแบบการคำนวณอายุ</label>
+            <select id="age-type" class="form-control" onchange="toggleAgeFields()" style="padding: 10px;">
+                <option value="years">ระบุเป็น "ปี" (เด็กอายุ 1 - 15 ปี) 👦</option>
+                <option value="months">ระบุเป็น "เดือน" (ทารกแรกเกิด &lt; 1 ปี) 👶</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="group-years">
+            <label>👦 อายุเด็กปัจจุบัน (ปี)</label>
+            <input type="number" id="input-age-years" class="form-control" placeholder="ระบุอายุ เช่น 5" min="1" max="15">
+        </div>
+
+        <div class="form-group" id="group-months" style="display: none;">
+            <label>👶 อายุทารกปัจจุบัน (เดือน)</label>
+            <input type="number" id="input-age-months" class="form-control" placeholder="ระบุอายุ เช่น 6" min="1" max="11">
+        </div>
+
+        <!-- เพิ่มช่องกรอกค่าวัดจริงหน้างานเพื่อนำไปเปรียบเทียบเชิงลึก -->
+        <div class="form-group">
+            <label>⚖️ น้ำหนักที่วัดได้จริง ณ วันนี้ (kg)</label>
+            <input type="number" id="real-weight" class="form-control" placeholder="ตัวอย่าง: 16.5" step="0.1">
+        </div>
+
+        <div class="form-group" id="group-real-height">
+            <label>📏 ส่วนสูงที่วัดได้จริง ณ วันนี้ (cm)</label>
+            <input type="number" id="real-height" class="form-control" placeholder="ตัวอย่าง: 105" step="0.1">
+        </div>
+
+        <button class="submit-btn" onclick="estimateGrowth()">🧬 ประมวลผลและแปรผลลัพธ์</button>
+
+        <!-- การ์ดสรุปผลการเปรียบเทียบสำหรับสื่อสารกับพ่อแม่ -->
+        <div id="result-card" class="result-card">
+            <div class="result-row">
+                <span class="result-label">⚖️ น้ำหนักคาดการณ์มาตรฐาน:</span>
+                <span class="result-value" id="res-weight">- kg</span>
+            </div>
+            <div class="result-row" id="row-height">
+                <span class="result-label">📏 ส่วนสูงคาดการณ์มาตรฐาน:</span>
+                <span class="result-value" id="res-height">- cm</span>
+            </div>
+            
+            <!-- กล่องข้อความแปรผลลัพธ์เพื่อใช้คุยกับผู้ปกครองทันที -->
+            <div class="advise-box" id="parent-advise">
+                <strong>📢 สรุปสำหรับแจ้งผู้ปกครอง:</strong><br>
+                <span id="advise-text">-</span>
+            </div>
+
+            <button class="btn-reset" onclick="resetForm()">🔄 ประเมินเคสถัดไป</button>
+        </div>
+
+        <div class="qr-section" id="qr-area">
+            <button class="btn-qr" onclick="toggleQR()">แสดง/ซ่อน QR สำหรับแชร์</button>
+            <div id="qr-container" style="display:none;"><div id="qrcode"></div></div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 งานผู้ป่วยนอก โรงพยาบาลตาคลี | พัฒนาโดย Khemika Pongsri
+    </footer>
+</div>
+
+<script>
+    function toggleAgeFields() {
+        const type = document.getElementById('age-type').value;
+        if (type === 'years') {
+            document.getElementById('group-years').style.display = 'block';
+            document.getElementById('group-months').style.display = 'none';
+            document.getElementById('group-real-height').style.display = 'block';
+        } else {
+            document.getElementById('group-years').style.display = 'none';
+            document.getElementById('group-months').style.display = 'block';
+            document.getElementById('group-real-height').style.display = 'none'; // ทารกเล็กเน้นน้ำหนัก
+        }
+    }
+
+    function estimateGrowth() {
+        const type = document.getElementById('age-type').value;
+        const realW = parseFloat(document.getElementById('real-weight').value);
+        const realH = parseFloat(document.getElementById('real-height').value) || 0;
+        
+        let idealW = 0;
+        let idealH = 0;
+        let showHeight = true;
+
+        if (isNaN(realW) || realW <= 0) {
+            alert('กรุณากรอกน้ำหนักที่วัดได้จริงของเด็กด้วยค่ะ');
+            return;
+        }
+
+        if (type === 'years') {
+            const ageY = parseFloat(document.getElementById('input-age-years').value);
+            if (isNaN(ageY) || ageY < 1 || ageY > 15) {
+                alert('กรุณากรอกอายุระหว่าง 1 - 15 ปีค่ะ');
+                return;
+            }
+            if (realH <= 0) {
+                alert('กรุณากรอกส่วนสูงที่วัดได้จริงด้วยค่ะ');
+                return;
+            }
+            
+            if (ageY <= 8) {
+                idealW = (ageY * 2) + 8;
+                idealH = (ageY * 6) + 77;
+            } else {
+                idealW = (ageY * 3) + 7;
+                idealH = (ageY * 5) + 85;
+            }
+        } else {
+            const ageM = parseFloat(document.getElementById('input-age-months').value);
+            if (isNaN(ageM) || ageM < 1 || ageM > 11) {
+                alert('กรุณากรอกอายุทารกระหว่าง 1 - 11 เดือนค่ะ');
+                return;
+            }
+            idealW = (ageM + 9) / 2;
+            showHeight = false; 
+        }
+
+        document.getElementById('res-weight').innerText = idealW.toFixed(1) + " kg";
+        if (showHeight) {
+            document.getElementById('row-height').style.display = 'flex';
+            document.getElementById('res-height').innerText = idealH.toFixed(1) + " cm";
+        } else {
+            document.getElementById('row-height').style.display = 'none';
+        }
+
+        // 🌟 ตรรกะแปรผลอัจฉริยะเพื่อสื่อสารกับพ่อแม่คำต่อคำ
+        const adviseText = document.getElementById('advise-text');
+        let weightDiff = realW - idealW;
+        let statusMsg = "";
+
+        if (Math.abs(weightDiff) <= (idealW * 0.1)) {
+            statusMsg = "🟢 ร่างกายเติบโตอยู่ในเกณฑ์ปกติและสมส่วนดีมากค่ะ";
+        } else if (weightDiff > (idealW * 0.1)) {
+            statusMsg = "🟡 น้ำหนักเกินเกณฑ์มาตรฐานเฉลี่ยเล็กน้อย แนะนำให้ผู้ปกครองควบคุมการทานขนมหวานและน้ำอัดลมของน้องนะคะ";
+        } else {
+            statusMsg = "🔴 น้ำหนักค่อนข้างต่ำกว่าเกณฑ์มาตรฐาน แนะนำให้เน้นอาหารกลุ่มโปรตีนและนมเพื่อเสริมสร้างการเจริญเติบโตค่ะ";
+        }
+
+        adviseText.innerHTML = `ตอนนี้น้องมีค่าน้ำหนักจริง ${realW} kg (เกณฑ์เฉลี่ยมาตรฐานวัยนี้คือ ${idealW.toFixed(1)} kg) สรุปภาพรวม: <span style="font-weight:bold; color:#047857;">${statusMsg}</span>`;
+
+        document.getElementById('result-card').style.display = 'block';
+        document.getElementById('qr-area').style.display = 'block';
+    }
+
+    var qrcode = new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 128, height: 128 });
+    function toggleQR() {
+        var x = document.getElementById("qr-container");
+        x.style.display = (x.style.display === "none") ? "block" : "none";
+    }
+
+    function resetForm() {
+        document.getElementById('input-age-years').value = "";
+        document.getElementById('input-age-months').value = "";
+        document.getElementById('real-weight').value = "";
+        document.getElementById('real-height').value = "";
+        document.getElementById('result-card').style.display = 'none';
+        document.getElementById('qr-area').style.display = 'none';
+        document.getElementById('qr-container').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
