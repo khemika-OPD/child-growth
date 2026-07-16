@@ -20,13 +20,11 @@
 
         .content { padding: 20px; flex-grow: 1; }
         
-        /* ปุ่มเลือกเพศสไตล์มินิมอลแบบกรมอนามัย */
         .gender-container { display: flex; gap: 10px; margin-bottom: 16px; }
         .gender-btn { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.15s; color: #4b5563; }
         .gender-btn.active-boy { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
         .gender-btn.active-girl { border-color: #ec4899; background: #fdf2f8; color: #b71c1c; }
 
-        /* การจัดวางช่องกรอกอายุคู่กันแบบกรมอนามัย */
         .age-row { display: flex; gap: 12px; margin-bottom: 16px; }
         .age-col { flex: 1; }
 
@@ -64,21 +62,23 @@
     </div>
 
     <div class="content">
-        <!-- 1. ส่วนเลือกเพศถอดแบบจาก UI กรมอนามัย -->
+        <!-- 1. ส่วนเลือกเพศ -->
         <label style="display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px;">1. เพศของเด็ก</label>
         <div class="gender-container">
             <button type="button" id="btn-boy" class="gender-btn active-boy" onclick="selectGender('male')">👦 เพศชาย</button>
             <button type="button" id="btn-girl" class="gender-btn" onclick="selectGender('female')">👧 เพศหญิง</button>
         </div>
 
-        <!-- 2. ส่วนกรอกอายุจัดวางคู่กัน ปี/เดือน แบบกรมอนามัย -->
+        <!-- 2. ส่วนกรอกอายุจัดวางคู่กันพร้อมตัวหนังสือและไอคอนกำกับชัดเจน -->
         <label style="display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px;">2. อายุปัจจุบัน</label>
         <div class="age-row">
             <div class="age-col">
-                <input type="number" id="age-years" class="form-control" placeholder="ปี (0-15)" min="0" max="15" value="0">
+                <span style="font-size: 11px; font-weight: bold; color: #64748b; display: block; margin-bottom: 4px;">📅 ปี</span>
+                <input type="number" id="age-years" class="form-control" placeholder="ระบุจำนวนปี (0-15)" min="0" max="15" value="0">
             </div>
             <div class="age-col">
-                <input type="number" id="age-months" class="form-control" placeholder="เดือน (0-11)" min="0" max="11" value="0">
+                <span style="font-size: 11px; font-weight: bold; color: #64748b; display: block; margin-bottom: 4px;">🌙 เดือน</span>
+                <input type="number" id="age-months" class="form-control" placeholder="ระบุจำนวนเดือน (0-11)" min="0" max="11" value="0">
             </div>
         </div>
 
@@ -130,7 +130,7 @@
 </div>
 
 <script>
-    let currentGender = 'male'; // ค่าเริ่มต้นเพศชาย
+    let currentGender = 'male';
 
     function selectGender(gender) {
         currentGender = gender;
@@ -157,15 +157,11 @@
             return;
         }
 
-        // แปลงอายุรวมเป็นปีทศนิยมเพื่อความต่อเนื่องในการคำนวณสมการเส้นเกณฑ์มาตรฐานไทย
         let totalAge = years + (months / 12);
-        
         let idealW = 0;
         let idealH = 0;
 
-        // 🌟 ตรรกะแยกพิกัดสมการคำนวณน้ำหนักและส่วนสูงมาตรฐานตามเพศและอายุจริง
         if (currentGender === 'male') {
-            // เพศชาย
             if (totalAge < 1) {
                 idealW = (months + 9) / 2;
                 idealH = (months * 2.5) + 50;
@@ -177,7 +173,6 @@
                 idealH = (totalAge * 5) + 85;
             }
         } else {
-            // เพศหญิง (เกณฑ์มาตรฐานจะน้อยกว่าเพศชายเล็กน้อยตามธรรมชาติ)
             if (totalAge < 1) {
                 idealW = ((months + 9) / 2) * 0.95;
                 idealH = (months * 2.4) + 49;
@@ -190,13 +185,11 @@
             }
         }
 
-        // แสดงผลลัพธ์
         const genderText = (currentGender === 'male') ? 'เพศชาย' : 'เพศหญิง';
         document.getElementById('res-identity').innerText = `${genderText} (${years} ปี ${months} เดือน)`;
         document.getElementById('res-weight').innerText = idealW.toFixed(1) + " kg";
         document.getElementById('res-height').innerText = idealH.toFixed(1) + " cm";
 
-        // แปรผลเพื่อคุยกับพ่อแม่
         const adviseText = document.getElementById('advise-text');
         let weightDiff = realW - idealW;
         let statusMsg = "";
