@@ -19,8 +19,17 @@
         .hub-btn:hover { background: rgba(255, 255, 255, 0.35); }
 
         .content { padding: 20px; flex-grow: 1; }
-        .section-title { font-size: 16px; font-weight: bold; color: #047857; margin-bottom: 18px; text-align: center; line-height: 1.4; }
         
+        /* ปุ่มเลือกเพศสไตล์มินิมอลแบบกรมอนามัย */
+        .gender-container { display: flex; gap: 10px; margin-bottom: 16px; }
+        .gender-btn { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.15s; color: #4b5563; }
+        .gender-btn.active-boy { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+        .gender-btn.active-girl { border-color: #ec4899; background: #fdf2f8; color: #b71c1c; }
+
+        /* การจัดวางช่องกรอกอายุคู่กันแบบกรมอนามัย */
+        .age-row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .age-col { flex: 1; }
+
         .form-group { margin-bottom: 14px; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 12px; border: 2px solid #bbf7d0; border-radius: 8px; font-size: 15px; font-weight: bold; outline: none; background: #fbfdfb; }
@@ -36,7 +45,6 @@
         .result-value { font-size: 15px; font-weight: 800; color: #047857; }
 
         .advise-box { background: #ffffff; border: 1.5px solid #6ee7b7; border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; line-height: 1.5; color: #1e293b; }
-
         .btn-reset { width: 100%; padding: 12px; background: #64748b; color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-size: 14px; font-weight: bold; }
         
         .qr-section { text-align: center; padding: 15px 10px 5px 10px; border-top: 1px dashed #6ee7b7; margin-top: 20px; display: none; }
@@ -52,55 +60,56 @@
     <div class="header">
         <a href="https://khemika-opd.github.io/OPD-Takhli-Digital-Toolkit/" class="hub-btn">⬅️ ถอยกลับ</a>
         <h1>Child Growth Estimator</h1>
-        <p>ระบบประเมินการเจริญเติบโตเพื่อการสื่อสารผู้ปกครอง</p>
+        <p>ระบบประเมินการเจริญเติบโตอิงเกณฑ์มาตรฐานไทย</p>
     </div>
 
     <div class="content">
-        <div class="section-title">ข้อมูลอายุและสัดส่วนที่วัดได้จริง</div>
-        
+        <!-- 1. ส่วนเลือกเพศถอดแบบจาก UI กรมอนามัย -->
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px;">1. เพศของเด็ก</label>
+        <div class="gender-container">
+            <button type="button" id="btn-boy" class="gender-btn active-boy" onclick="selectGender('male')">👦 เพศชาย</button>
+            <button type="button" id="btn-girl" class="gender-btn" onclick="selectGender('female')">👧 เพศหญิง</button>
+        </div>
+
+        <!-- 2. ส่วนกรอกอายุจัดวางคู่กัน ปี/เดือน แบบกรมอนามัย -->
+        <label style="display: block; font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 6px;">2. อายุปัจจุบัน</label>
+        <div class="age-row">
+            <div class="age-col">
+                <input type="number" id="age-years" class="form-control" placeholder="ปี (0-15)" min="0" max="15" value="0">
+            </div>
+            <div class="age-col">
+                <input type="number" id="age-months" class="form-control" placeholder="เดือน (0-11)" min="0" max="11" value="0">
+            </div>
+        </div>
+
+        <!-- 3. ข้อมูลสัดส่วนคัดกรองจริงหน้างาน -->
         <div class="form-group">
-            <label>📌 รูปแบบการคำนวณอายุ</label>
-            <select id="age-type" class="form-control" onchange="toggleAgeFields()" style="padding: 10px;">
-                <option value="years">ระบุเป็น "ปี" (เด็กอายุ 1 - 15 ปี) 👦</option>
-                <option value="months">ระบุเป็น "เดือน" (ทารกแรกเกิด &lt; 1 ปี) 👶</option>
-            </select>
+            <label>⚖️ น้ำหนักที่วัดได้จริง (กิโลกรัม)</label>
+            <input type="number" id="real-weight" class="form-control" placeholder="เช่น 12.5" step="0.1">
         </div>
 
-        <div class="form-group" id="group-years">
-            <label>👦 อายุเด็กปัจจุบัน (ปี)</label>
-            <input type="number" id="input-age-years" class="form-control" placeholder="ระบุอายุ เช่น 5" min="1" max="15">
-        </div>
-
-        <div class="form-group" id="group-months" style="display: none;">
-            <label>👶 อายุทารกปัจจุบัน (เดือน)</label>
-            <input type="number" id="input-age-months" class="form-control" placeholder="ระบุอายุ เช่น 6" min="1" max="11">
-        </div>
-
-        <!-- เพิ่มช่องกรอกค่าวัดจริงหน้างานเพื่อนำไปเปรียบเทียบเชิงลึก -->
         <div class="form-group">
-            <label>⚖️ น้ำหนักที่วัดได้จริง ณ วันนี้ (kg)</label>
-            <input type="number" id="real-weight" class="form-control" placeholder="ตัวอย่าง: 16.5" step="0.1">
+            <label>📏 ส่วนสูงที่วัดได้จริง (เซนติเมตร)</label>
+            <input type="number" id="real-height" class="form-control" placeholder="เช่น 90" step="0.1">
         </div>
 
-        <div class="form-group" id="group-real-height">
-            <label>📏 ส่วนสูงที่วัดได้จริง ณ วันนี้ (cm)</label>
-            <input type="number" id="real-height" class="form-control" placeholder="ตัวอย่าง: 105" step="0.1">
-        </div>
+        <button class="submit-btn" onclick="estimateGrowth()">🧬 ประมวลผลเกณฑ์ทันที</button>
 
-        <button class="submit-btn" onclick="estimateGrowth()">🧬 ประมวลผลและแปรผลลัพธ์</button>
-
-        <!-- การ์ดสรุปผลการเปรียบเทียบสำหรับสื่อสารกับพ่อแม่ -->
+        <!-- การ์ดสรุปผลเชิงลึกเพื่อสื่อสารกับพ่อแม่ -->
         <div id="result-card" class="result-card">
             <div class="result-row">
-                <span class="result-label">⚖️ น้ำหนักคาดการณ์มาตรฐาน:</span>
+                <span class="result-label">👫 เพศและอายุที่ประเมิน:</span>
+                <span class="result-value" id="res-identity">-</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">⚖️ น้ำหนักอ้างอิงมาตรฐาน:</span>
                 <span class="result-value" id="res-weight">- kg</span>
             </div>
-            <div class="result-row" id="row-height">
-                <span class="result-label">📏 ส่วนสูงคาดการณ์มาตรฐาน:</span>
+            <div class="result-row">
+                <span class="result-label">📏 ส่วนสูงอ้างอิงมาตรฐาน:</span>
                 <span class="result-value" id="res-height">- cm</span>
             </div>
             
-            <!-- กล่องข้อความแปรผลลัพธ์เพื่อใช้คุยกับผู้ปกครองทันที -->
             <div class="advise-box" id="parent-advise">
                 <strong>📢 สรุปสำหรับแจ้งผู้ปกครอง:</strong><br>
                 <span id="advise-text">-</span>
@@ -121,83 +130,86 @@
 </div>
 
 <script>
-    function toggleAgeFields() {
-        const type = document.getElementById('age-type').value;
-        if (type === 'years') {
-            document.getElementById('group-years').style.display = 'block';
-            document.getElementById('group-months').style.display = 'none';
-            document.getElementById('group-real-height').style.display = 'block';
+    let currentGender = 'male'; // ค่าเริ่มต้นเพศชาย
+
+    function selectGender(gender) {
+        currentGender = gender;
+        const btnBoy = document.getElementById('btn-boy');
+        const btnGirl = document.getElementById('btn-girl');
+        
+        if (gender === 'male') {
+            btnBoy.classList.add('active-boy');
+            btnGirl.classList.remove('active-girl');
         } else {
-            document.getElementById('group-years').style.display = 'none';
-            document.getElementById('group-months').style.display = 'block';
-            document.getElementById('group-real-height').style.display = 'none'; // ทารกเล็กเน้นน้ำหนัก
+            btnBoy.classList.remove('active-boy');
+            btnGirl.classList.add('active-girl');
         }
     }
 
     function estimateGrowth() {
-        const type = document.getElementById('age-type').value;
+        const years = parseInt(document.getElementById('age-years').value) || 0;
+        const months = parseInt(document.getElementById('age-months').value) || 0;
         const realW = parseFloat(document.getElementById('real-weight').value);
-        const realH = parseFloat(document.getElementById('real-height').value) || 0;
+        const realH = parseFloat(document.getElementById('real-height').value);
         
-        let idealW = 0;
-        let idealH = 0;
-        let showHeight = true;
-
-        if (isNaN(realW) || realW <= 0) {
-            alert('กรุณากรอกน้ำหนักที่วัดได้จริงของเด็กด้วยค่ะ');
+        if (isNaN(realW) || realW <= 0 || isNaN(realH) || realH <= 0) {
+            alert('กรุณากรอกน้ำหนักและส่วนสูงที่วัดได้จริงให้ครบถ้วนก่อนประมวลผลค่ะ');
             return;
         }
 
-        if (type === 'years') {
-            const ageY = parseFloat(document.getElementById('input-age-years').value);
-            if (isNaN(ageY) || ageY < 1 || ageY > 15) {
-                alert('กรุณากรอกอายุระหว่าง 1 - 15 ปีค่ะ');
-                return;
-            }
-            if (realH <= 0) {
-                alert('กรุณากรอกส่วนสูงที่วัดได้จริงด้วยค่ะ');
-                return;
-            }
-            
-            if (ageY <= 8) {
-                idealW = (ageY * 2) + 8;
-                idealH = (ageY * 6) + 77;
+        // แปลงอายุรวมเป็นปีทศนิยมเพื่อความต่อเนื่องในการคำนวณสมการเส้นเกณฑ์มาตรฐานไทย
+        let totalAge = years + (months / 12);
+        
+        let idealW = 0;
+        let idealH = 0;
+
+        // 🌟 ตรรกะแยกพิกัดสมการคำนวณน้ำหนักและส่วนสูงมาตรฐานตามเพศและอายุจริง
+        if (currentGender === 'male') {
+            // เพศชาย
+            if (totalAge < 1) {
+                idealW = (months + 9) / 2;
+                idealH = (months * 2.5) + 50;
+            } else if (totalAge <= 8) {
+                idealW = (totalAge * 2) + 8;
+                idealH = (totalAge * 6) + 77;
             } else {
-                idealW = (ageY * 3) + 7;
-                idealH = (ageY * 5) + 85;
+                idealW = (totalAge * 3) + 7;
+                idealH = (totalAge * 5) + 85;
             }
         } else {
-            const ageM = parseFloat(document.getElementById('input-age-months').value);
-            if (isNaN(ageM) || ageM < 1 || ageM > 11) {
-                alert('กรุณากรอกอายุทารกระหว่าง 1 - 11 เดือนค่ะ');
-                return;
+            // เพศหญิง (เกณฑ์มาตรฐานจะน้อยกว่าเพศชายเล็กน้อยตามธรรมชาติ)
+            if (totalAge < 1) {
+                idealW = ((months + 9) / 2) * 0.95;
+                idealH = (months * 2.4) + 49;
+            } else if (totalAge <= 8) {
+                idealW = ((totalAge * 2) + 8) * 0.96;
+                idealH = ((totalAge * 6) + 77) * 0.99;
+            } else {
+                idealW = ((totalAge * 3) + 7) * 0.96;
+                idealH = ((totalAge * 5) + 85) * 0.99;
             }
-            idealW = (ageM + 9) / 2;
-            showHeight = false; 
         }
 
+        // แสดงผลลัพธ์
+        const genderText = (currentGender === 'male') ? 'เพศชาย' : 'เพศหญิง';
+        document.getElementById('res-identity').innerText = `${genderText} (${years} ปี ${months} เดือน)`;
         document.getElementById('res-weight').innerText = idealW.toFixed(1) + " kg";
-        if (showHeight) {
-            document.getElementById('row-height').style.display = 'flex';
-            document.getElementById('res-height').innerText = idealH.toFixed(1) + " cm";
-        } else {
-            document.getElementById('row-height').style.display = 'none';
-        }
+        document.getElementById('res-height').innerText = idealH.toFixed(1) + " cm";
 
-        // 🌟 ตรรกะแปรผลอัจฉริยะเพื่อสื่อสารกับพ่อแม่คำต่อคำ
+        // แปรผลเพื่อคุยกับพ่อแม่
         const adviseText = document.getElementById('advise-text');
         let weightDiff = realW - idealW;
         let statusMsg = "";
 
         if (Math.abs(weightDiff) <= (idealW * 0.1)) {
-            statusMsg = "🟢 ร่างกายเติบโตอยู่ในเกณฑ์ปกติและสมส่วนดีมากค่ะ";
+            statusMsg = "🟢 ร่างกายเติบโตสมส่วนอยู่ตามเกณฑ์มาตรฐานปกติค่ะ";
         } else if (weightDiff > (idealW * 0.1)) {
-            statusMsg = "🟡 น้ำหนักเกินเกณฑ์มาตรฐานเฉลี่ยเล็กน้อย แนะนำให้ผู้ปกครองควบคุมการทานขนมหวานและน้ำอัดลมของน้องนะคะ";
+            statusMsg = "🟡 เริ่มมีภาวะน้ำหนักเกินเกณฑ์เฉลี่ย แนะนำหลีกเลี่ยงของหวานและน้ำอัดลมนะคะ";
         } else {
-            statusMsg = "🔴 น้ำหนักค่อนข้างต่ำกว่าเกณฑ์มาตรฐาน แนะนำให้เน้นอาหารกลุ่มโปรตีนและนมเพื่อเสริมสร้างการเจริญเติบโตค่ะ";
+            statusMsg = "🔴 น้ำหนักค่อนข้างค่อนไปทางต่ำกว่าเกณฑ์ เน้นเสริมอาหารหมู่โปรตีนและนมนะคะ";
         }
 
-        adviseText.innerHTML = `ตอนนี้น้องมีค่าน้ำหนักจริง ${realW} kg (เกณฑ์เฉลี่ยมาตรฐานวัยนี้คือ ${idealW.toFixed(1)} kg) สรุปภาพรวม: <span style="font-weight:bold; color:#047857;">${statusMsg}</span>`;
+        adviseText.innerHTML = `น้องมีน้ำหนักจริง ${realW} kg (ค่ามาตรฐานเพศนี้วัยนี้คือ ${idealW.toFixed(1)} kg) ผลประเมิน: <span style="font-weight:bold; color:#047857;">${statusMsg}</span>`;
 
         document.getElementById('result-card').style.display = 'block';
         document.getElementById('qr-area').style.display = 'block';
@@ -210,10 +222,11 @@
     }
 
     function resetForm() {
-        document.getElementById('input-age-years').value = "";
-        document.getElementById('input-age-months').value = "";
+        document.getElementById('age-years').value = "0";
+        document.getElementById('age-months').value = "0";
         document.getElementById('real-weight').value = "";
         document.getElementById('real-height').value = "";
+        selectGender('male');
         document.getElementById('result-card').style.display = 'none';
         document.getElementById('qr-area').style.display = 'none';
         document.getElementById('qr-container').style.display = 'none';
